@@ -1,4 +1,3 @@
-// components/ProductModal.tsx
 import React, { useState } from 'react';
 import {
     Modal,
@@ -11,7 +10,8 @@ import {
     KeyboardAvoidingView,
     Platform,
 } from 'react-native';
-import { ProductForm } from '../../types/Product';
+import { ProductForm } from '../types/Product';
+import { useTheme } from '../context/ThemeContext';
 
 interface ProductModalProps {
     visible: boolean;
@@ -31,6 +31,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
         description: '',
     });
     const [errors, setErrors] = useState<Partial<ProductForm>>({});
+    const { isDark } = useTheme();
+    const styles = getStyles(isDark);
 
     const validateForm = (): boolean => {
         const newErrors: Partial<ProductForm> = {};
@@ -97,6 +99,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             value={form.name}
                             onChangeText={(text) => setForm({ ...form, name: text })}
                             placeholder="Enter product name"
+                            placeholderTextColor={isDark ? '#888' : '#999'}
                         />
                         {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
                     </View>
@@ -111,6 +114,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             value={form.price}
                             onChangeText={(text) => setForm({ ...form, price: text })}
                             placeholder="Enter price"
+                            placeholderTextColor={isDark ? '#888' : '#999'}
                             keyboardType="numeric"
                         />
                         {errors.price && <Text style={styles.errorText}>{errors.price}</Text>}
@@ -126,6 +130,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             value={form.imageUrl}
                             onChangeText={(text) => setForm({ ...form, imageUrl: text })}
                             placeholder="Enter image URL"
+                            placeholderTextColor={isDark ? '#888' : '#999'}
                             autoCapitalize="none"
                         />
                         {errors.imageUrl && <Text style={styles.errorText}>{errors.imageUrl}</Text>}
@@ -138,6 +143,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                             value={form.description}
                             onChangeText={(text) => setForm({ ...form, description: text })}
                             placeholder="Enter product description"
+                            placeholderTextColor={isDark ? '#888' : '#999'}
                             multiline
                             numberOfLines={3}
                             textAlignVertical="top"
@@ -158,10 +164,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (isDark: boolean) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: isDark ? '#121212' : 'white',
     },
     header: {
         flexDirection: 'row',
@@ -169,16 +175,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
+        borderBottomColor: isDark ? '#333' : '#e0e0e0',
     },
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#333',
+        color: isDark ? '#fff' : '#333',
     },
     closeButton: {
         fontSize: 20,
-        color: '#666',
+        color: isDark ? '#ccc' : '#666',
         padding: 4,
     },
     form: {
@@ -191,16 +197,17 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#333',
+        color: isDark ? '#fff' : '#333',
         marginBottom: 8,
     },
     input: {
         borderWidth: 1,
-        borderColor: '#ddd',
+        borderColor: isDark ? '#333' : '#ddd',
         borderRadius: 8,
         padding: 12,
         fontSize: 16,
-        backgroundColor: '#f9f9f9',
+        backgroundColor: isDark ? '#1e1e1e' : '#f9f9f9',
+        color: isDark ? '#fff' : '#333',
     },
     inputError: {
         borderColor: '#FF3B30',
@@ -217,7 +224,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         padding: 16,
         borderTopWidth: 1,
-        borderTopColor: '#e0e0e0',
+        borderTopColor: isDark ? '#333' : '#e0e0e0',
         gap: 12,
     },
     cancelButton: {

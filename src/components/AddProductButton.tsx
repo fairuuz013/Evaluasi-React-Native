@@ -1,4 +1,3 @@
-// components/AddProductButton.tsx
 import React from 'react';
 import {
     TouchableOpacity,
@@ -23,13 +22,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#007AFF',
         margin: 16,
         padding: 16,
-        borderRadius: 8,
+        borderRadius: 50,
         alignItems: 'center',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 6,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
     },
     buttonText: {
         color: 'white',

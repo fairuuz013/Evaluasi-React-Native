@@ -1,4 +1,3 @@
-// components/ProductList.tsx
 import React from 'react';
 import {
     View,
@@ -7,21 +6,29 @@ import {
     StyleSheet,
     ListRenderItem,
 } from 'react-native';
-import { Product } from '../../types/Product';
+import { Product } from '../types/Product';
 import ProductItem from './ProductItem';
+import { useTheme } from '../context/ThemeContext';
 
 interface ProductListProps {
     products: Product[];
+    onProductPress?: (product: Product) => void;
 }
 
-const ProductList: React.FC<ProductListProps> = ({ products }): React.JSX.Element => {
+const ProductList: React.FC<ProductListProps> = ({ products, onProductPress }): React.JSX.Element => {
+    const { isDark } = useTheme();
+    const styles = getStyles(isDark);
+
     const renderProductItem: ListRenderItem<Product> = ({ item }) => (
-        <ProductItem product={item} />
+        <ProductItem
+            product={item}
+            onPress={() => onProductPress?.(item)}
+        />
     );
 
     return (
         <View style={styles.container}>
-            <Text style={styles.sectionTitle}>Products ({products.length})</Text>
+            <Text style={styles.sectionTitle}>Our Products ({products.length})</Text>
             <FlatList
                 data={products}
                 keyExtractor={(item) => item.id}
@@ -33,19 +40,21 @@ const ProductList: React.FC<ProductListProps> = ({ products }): React.JSX.Elemen
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (isDark: boolean) => StyleSheet.create({
     container: {
         flex: 1,
         padding: 16,
+        backgroundColor: isDark ? '#121212' : '#f5f5f5',
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: 24,
         fontWeight: 'bold',
-        marginBottom: 16,
-        color: '#333',
+        marginBottom: 20,
+        color: isDark ? '#fff' : '#333',
+        textAlign: 'center',
     },
     listContent: {
-        paddingBottom: 20,
+        paddingBottom: 100,
     },
 });
 
