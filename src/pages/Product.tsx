@@ -8,7 +8,7 @@ import { Product, ProductForm } from '../types/Product';
 import ProductList from '../components/ProductList';
 import AddProductButton from '../components/AddProductButton';
 import ProductModal from '../components/ProductModal';
-import Navbar from '../components/Navbar';
+
 import { useTheme } from '../context/ThemeContext';
 
 // Generate ID sederhana
@@ -87,7 +87,6 @@ export default function Products() {
 
     return (
         <View style={styles.mainContainer}>
-            <Navbar title="All Products" />
 
             <ProductList
                 products={products}
@@ -108,7 +107,7 @@ export default function Products() {
 const getStyles = (isDark: boolean) => StyleSheet.create({
     mainContainer: {
         flex: 1,
-        backgroundColor: isDark ? '#121212' : '#f5f5f5',
+
         paddingTop: 30
     },
 });
