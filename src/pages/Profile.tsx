@@ -1,4 +1,5 @@
-import React from 'react';
+// pages/Profile.tsx
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -7,14 +8,75 @@ import {
     Image,
     TouchableOpacity
 } from 'react-native';
-import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
+
+// Simulasi state autentikasi
+const useAuth = () => {
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    // Simulasi cek token dari storage
+    useEffect(() => {
+        const checkAuth = async () => {
+            // Di app real, ini akan cek ke AsyncStorage atau context
+            const token = await new Promise(resolve =>
+                setTimeout(() => resolve('dummy-token'), 100)
+            );
+            setIsAuthenticated(!!token);
+        };
+        checkAuth();
+    }, []);
+
+    return { isAuthenticated, setIsAuthenticated };
+};
 
 export default function Profile() {
     const navigation = useNavigation();
+    const isFocused = useIsFocused();
+    const { isAuthenticated, setIsAuthenticated } = useAuth();
+
+    // Refresh auth status ketika screen focused
+    useEffect(() => {
+        if (isFocused) {
+            // Re-check authentication status
+            const checkAuth = async () => {
+                const token = await new Promise(resolve =>
+                    setTimeout(() => resolve('dummy-token'), 100)
+                );
+                setIsAuthenticated(!!token);
+            };
+            checkAuth();
+        }
+    }, [isFocused]);
+
+    const handleLogin = () => {
+        setIsAuthenticated(true);
+    };
+
+    const handleLogout = () => {
+        setIsAuthenticated(false);
+    };
+
+    // Soal Praktik 5: Auth Guard
+    if (!isAuthenticated) {
+        return (
+            <View style={styles.mainContainer}>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>My Profile</Text>
+                    <View style={styles.placeholder} />
+                </View>
+
+                <View style={styles.authContainer}>
+                    <Text style={styles.authTitle}>Harap Login untuk mengakses</Text>
+                    <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                        <Text style={styles.loginButtonText}>Login</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.mainContainer}>
-            {/* Custom Header */}
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>My Profile</Text>
                 <View style={styles.placeholder} />
@@ -74,7 +136,7 @@ export default function Profile() {
                 </View>
 
                 {/* Logout Button */}
-                <TouchableOpacity style={styles.logoutButton}>
+                <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
                     <Text style={styles.logoutIcon}>🚪</Text>
                     <Text style={styles.logoutText}>Log Out</Text>
                 </TouchableOpacity>
@@ -113,6 +175,29 @@ const styles = StyleSheet.create({
     },
     placeholder: {
         width: 20,
+    },
+    authContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 40,
+    },
+    authTitle: {
+        fontSize: 18,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 20,
+    },
+    loginButton: {
+        backgroundColor: '#007AFF',
+        paddingHorizontal: 30,
+        paddingVertical: 12,
+        borderRadius: 8,
+    },
+    loginButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
     },
     profileSection: {
         backgroundColor: '#fff',

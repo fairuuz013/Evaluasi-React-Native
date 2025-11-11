@@ -1,3 +1,4 @@
+// components/ProductItem.tsx
 import React from 'react';
 import {
     View,
@@ -6,6 +7,8 @@ import {
     StyleSheet,
     TouchableOpacity,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { Product } from '../types/Product';
 
 interface ProductItemProps {
@@ -13,9 +16,25 @@ interface ProductItemProps {
     onPress?: () => void;
 }
 
+type ProductItemNavigationProp = StackNavigationProp<any, 'ProductsTopTabs'>;
+
 const ProductItem: React.FC<ProductItemProps> = ({ product, onPress }) => {
+    const navigation = useNavigation<ProductItemNavigationProp>();
+
+    const handlePress = () => {
+        if (onPress) {
+            onPress();
+        } else {
+            // Soal Praktik 2: Navigasi ke Detail Produk
+            navigation.navigate('ProductDetail', {
+                productId: product.id,
+                product: product
+            });
+        }
+    };
+
     return (
-        <TouchableOpacity style={styles.container} onPress={onPress}>
+        <TouchableOpacity style={styles.container} onPress={handlePress}>
             <Image
                 source={{ uri: product.imageUrl }}
                 style={styles.image}
@@ -37,6 +56,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ product, onPress }) => {
     );
 };
 
+// Styles tetap sama...
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
