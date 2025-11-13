@@ -1,59 +1,50 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
-import { useRoute, useNavigation, CommonActions, DrawerActions } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 
 export default function ProductDetail() {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
-  const { name, image, price } = route.params;
+  const { product } = route.params || {};
 
-  const handleResetAndCloseDrawer = () => {
-    // 🔁 Reset stack ke halaman utama
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: "Produk" }], // ubah sesuai nama route awal
-      })
+  if (!product) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.error}>Produk tidak ditemukan</Text>
+      </View>
     );
-
-    // 🚪 Tutup drawer di parent navigator
-    const parentNav = navigation.getParent();
-    if (parentNav) {
-      parentNav.dispatch(DrawerActions.closeDrawer());
-    }
-  };
+  }
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: image }} style={styles.image} />
-      <Text style={styles.name}>{name}</Text>
-      <Text style={styles.price}>Rp {price.toLocaleString()}</Text>
-      <Text style={styles.desc}>
-        Ini adalah deskripsi singkat tentang {name}. Produk ini populer karena kualitas dan rasanya yang khas.
-      </Text>
+      <Image source={{ uri: product.imageUrl }} style={styles.image} resizeMode="cover" />
+      <Text style={styles.name}>{product.name}</Text>
+      <Text style={styles.price}>Rp {product.price}</Text>
+      <Text style={styles.desc}>{product.description}</Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleResetAndCloseDrawer}>
-        <Text style={styles.buttonText}>Kembali ke Halaman Utama</Text>
+      <TouchableOpacity
+        style={styles.checkoutButton}
+        onPress={() => navigation.navigate("Checkout", { product })}
+      >
+        <Text style={styles.checkoutText}>Checkout Sekarang</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fff" },
-  image: { width: "100%", height: 200, borderRadius: 10, marginBottom: 15 },
-  name: { fontSize: 22, fontWeight: "700", marginBottom: 10 },
-  price: { fontSize: 18, color: "green", marginBottom: 15 },
-  desc: { fontSize: 14, color: "#555", marginBottom: 30 },
-  button: {
-    backgroundColor: "#007BFF",
-    padding: 12,
+  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
+  image: { width: "100%", height: 250, borderRadius: 12, marginBottom: 20 },
+  name: { fontSize: 22, fontWeight: "bold", color: "#333" },
+  price: { fontSize: 18, color: "#007AFF", marginVertical: 10 },
+  desc: { fontSize: 16, color: "#555", lineHeight: 22, marginBottom: 40 },
+  checkoutButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 14,
     borderRadius: 10,
     alignItems: "center",
   },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
+  checkoutText: { color: "#fff", fontSize: 18, fontWeight: "600" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  error: { color: "red", fontSize: 18 },
 });

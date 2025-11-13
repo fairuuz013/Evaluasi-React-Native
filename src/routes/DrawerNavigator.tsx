@@ -6,7 +6,7 @@ const Drawer = createDrawerNavigator();
 
 export default function DrawerNavigator() {
   return (
-    <Drawer.Navigator>
+    <Drawer.Navigator screenOptions={{ headerShown: false }}>
       <Drawer.Screen name="Main" component={BottomTabNavigator} />
     </Drawer.Navigator>
   );

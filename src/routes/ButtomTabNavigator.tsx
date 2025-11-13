@@ -1,17 +1,17 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import HomeStackNavigator from "./HomeStackNavigator";
 import Profile from "../pages/Profile";
-import Settings from "../pages/Settings";
+import HomeStackNavigator from "./HomeStackNavigator";
 
 const Tab = createBottomTabNavigator();
 
-export default function BottomTabNavigator() {
+export default function BottomTabNavigator({ route }: any) {
+  const { userID } = route.params || {};
+
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Home" component={HomeStackNavigator} />
-      <Tab.Screen name="Profile" component={Profile} />
-      <Tab.Screen name="Settings" component={Settings} />
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
+      <Tab.Screen name="HomeTab" component={HomeStackNavigator} options={{ title: "Home" }} />
+      <Tab.Screen name="Profile" component={Profile} initialParams={{ userID }} />
     </Tab.Navigator>
   );
 }
