@@ -1,24 +1,12 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import RootNavigator from './src/routes/RootNavigator';
-import { ThemeProvider } from './src/context/ThemeContext';
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import DrawerNavigator from "./src/routes/DrawerNavigator";
+import RootNavigator from "./src/routes/RootNavigator";
 
 export default function App() {
   return (
-
-    <ThemeProvider>
-
-      <View style={styles.container}>
-        <RootNavigator />
-      </View>
-
-    </ThemeProvider>
-
+    <NavigationContainer>
+      <RootNavigator />
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
