@@ -1,3 +1,4 @@
+
 import React from "react";
 import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -48,3 +49,4 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   error: { color: "red", fontSize: 18 },
 });
+

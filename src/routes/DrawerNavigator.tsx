@@ -6,6 +6,7 @@ import Settings from "../pages/Settings";
 import CustomDrawerContent from "../components/CustomDrawerContent";
 import { TouchableOpacity } from "react-native";
 import Icon from "@react-native-vector-icons/fontawesome6";
+import CartScreen from "../pages/CartScreen";
 
 const Drawer = createDrawerNavigator();
 
@@ -37,6 +38,14 @@ export default function DrawerNavigator() {
         component={Settings}
         options={{ title: "Pengaturan" }}
       />
+
+      <Drawer.Screen 
+      name="CartScreen"
+      component={CartScreen}
+      
+      />
+
+   
     </Drawer.Navigator>
   );
 }
