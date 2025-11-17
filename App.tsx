@@ -1,15 +1,16 @@
-// App.tsx (atau index)
-import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import RootNavigator from "./src/routes/RootNavigator"; // path sesuai project lo
 import { CartProvider } from "./src/context/CartContext";
+import RootNavigation from "./src/routes/RootNavigator";
+import ErrorBoundary from "./src/components/ErrorBoundary";
 
 export default function App() {
   return (
-    <CartProvider>
-      <NavigationContainer>
-        <RootNavigator />
-      </NavigationContainer>
-    </CartProvider>
+    <ErrorBoundary >
+      <CartProvider>
+        <NavigationContainer>
+          <RootNavigation />
+        </NavigationContainer>
+      </CartProvider>
+    </ErrorBoundary>
   );
 }
