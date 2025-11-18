@@ -1,21 +1,27 @@
-// src/pages/LoginScreen.tsx
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { loginUser } from "../api/authApi";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen() {
   const navigation = useNavigation<any>();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");              //username emilys
+  const [password, setPassword] = useState("");              //password emilyspass
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     try {
-     
-
-    
-
-      navigation.replace("Drawer");
+      // AXIOS RETURN RESPONSE DALAM .data
+      const response = await loginUser(username, password);                    
+      
+      // AKSES TOKEN DARI response.data
+      if (response.data.success && response.data.token) {
+        login(response.data.token); // SIMPAN TOKEN
+      } else {
+        // FALLBACK KE FLOW LAMA JIKA TIDAK ADA TOKEN
+        navigation.replace("Drawer");
+      }
     } catch (error) {
       Alert.alert("Login Gagal", "Username atau password salah!");
     }
