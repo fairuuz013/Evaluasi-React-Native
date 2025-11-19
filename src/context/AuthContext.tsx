@@ -1,35 +1,52 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { View, Text } from 'react-native'; // IMPORT Text
-import { storage } from '../utils/storage';
+import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import { storage, STORAGE_KEYS } from '../utils/storage';
 
 interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (token: string) => void;
-  logout: () => void;
+  logout: (options?: { clearCart?: boolean }) => void; // UPDATE: tambah parameter options
 }
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
 }
+
+const AuthContext = createContext<AuthContextType>({
+  token: null,
+  isLoading: true,
+  login: () => {},
+  logout: () => {},
+});
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkToken();
+    loadInitialData();
   }, []);
 
-  const checkToken = async () => {
+  const loadInitialData = async () => {
+    const startTime = Date.now();
+    
     try {
-      const savedToken = await storage.getToken();
-      setToken(savedToken);
+      // MULTI-GET: Ambil semua data penting sekaligus
+      const initialData = await storage.getAppInitialData();
+      
+      setToken(initialData.token);
+      
+      // Data lain bisa disimpan di state/context lain nanti
+      console.log('Theme setting:', initialData.theme);
+      console.log('Notification status:', initialData.notifications);
+      
     } catch (error) {
-      console.error('Error checking token:', error);
+      console.error('Error loading initial data:', error);
     } finally {
+      const endTime = Date.now();
+      const loadTime = endTime - startTime;
+      console.log(`AppInitialLoad: ${loadTime}ms`);
       setIsLoading(false);
     }
   };
@@ -39,16 +56,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(newToken);
   };
 
-  const logout = async () => {
-    await storage.removeToken();
-    setToken(null);
+  // UPDATE: Logout dengan cleanup options
+  const logout = async (options?: { clearCart?: boolean }) => {
+    try {
+      console.log('🚪 Logging out with cleanup...');
+      
+      // Gunakan multiRemove untuk hapus data sensitif
+      await storage.cleanupOnLogout(options);
+      
+      // Update state
+      setToken(null);
+      
+      console.log('✅ Logout successful');
+    } catch (error) {
+      console.error('❌ Error during logout:', error);
+      // Fallback: hapus token saja
+      await storage.removeToken();
+      setToken(null);
+    }
   };
 
-  // FIX: Jangan return string langsung
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading...</Text> {/* PAKAI TEXT COMPONENT */}
+        <ActivityIndicator size="large" />
       </View>
     );
   }
@@ -60,10 +91,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export const useAuth = () => useContext(AuthContext);

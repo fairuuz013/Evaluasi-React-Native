@@ -1,28 +1,31 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { loginUser } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
 
 export default function LoginScreen() {
-  const navigation = useNavigation<any>();
-  const [username, setUsername] = useState("");              //username emilys
-  const [password, setPassword] = useState("");              //password emilyspass
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const { login } = useAuth();
 
   const handleLogin = async () => {
     try {
-      // AXIOS RETURN RESPONSE DALAM .data
-      const response = await loginUser(username, password);                    
+      console.log('LoginScreen: Attempting login...');
       
-      // AKSES TOKEN DARI response.data
+      // Panggil API login
+      const response = await loginUser(username, password);
+      
+      console.log('LoginScreen: API Response:', response.data);
+      
+      // Simpan token untuk persistensi
       if (response.data.success && response.data.token) {
-        login(response.data.token); // SIMPAN TOKEN
+        console.log('LoginScreen: Login successful, saving token');
+        await login(response.data.token); // Simpan token dan trigger redirect
       } else {
-        // FALLBACK KE FLOW LAMA JIKA TIDAK ADA TOKEN
-        navigation.replace("Drawer");
+        Alert.alert("Login Gagal", "Token tidak diterima dari server");
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.log('LoginScreen: Login error:', error);
       Alert.alert("Login Gagal", "Username atau password salah!");
     }
   };
@@ -30,6 +33,7 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Mini E-Commerce</Text>
+      
 
       <TextInput
         style={styles.input}
@@ -49,13 +53,18 @@ export default function LoginScreen() {
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
+
+      <Text style={styles.note}>
+        Setelah login, tutup app dan buka kembali - akan langsung ke Home
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 30 },
+  title: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
+  subtitle: { fontSize: 16, marginBottom: 30, color: "#666" },
   input: {
     width: "80%",
     borderWidth: 1,
@@ -72,6 +81,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     width: "80%",
     alignItems: "center",
+    marginTop: 10,
   },
   buttonText: { color: "#fff", fontSize: 18, fontWeight: "600" },
+  note: { marginTop: 20, fontSize: 12, color: "#888", textAlign: "center", paddingHorizontal: 20 },
 });
