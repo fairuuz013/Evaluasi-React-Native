@@ -5,15 +5,14 @@ import ProductDetail from "../pages/ProductDetail";
 import Checkout from "../pages/Checkout";
 import DrawerNavigator from "./DrawerNavigator";
 import CartScreen from "../pages/CartScreen";
-import { useAuth } from "../context/AuthContext"; // IMPORT BARU
-import { ActivityIndicator, View } from "react-native"; // IMPORT BARU
+import { useAuth } from "../context/AuthContext";
+import { ActivityIndicator, View } from "react-native";
 
 const Stack = createStackNavigator();
 
 export default function RootNavigator() {
-  const { token, isLoading } = useAuth(); // GUARD FLOW
+  const { token, isLoading } = useAuth();
 
-  // Tampilkan loading saat cek token
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -24,19 +23,39 @@ export default function RootNavigator() {
 
   return (
     <Stack.Navigator 
-      initialRouteName={token ? "Drawer" : "Login"} // AUTO REDIRECT
+      initialRouteName={token ? "Drawer" : "Login"}
       screenOptions={{ headerShown: false }}
     >
       {!token ? (
         // User belum login
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen 
+          name="Login" 
+          component={LoginScreen}
+          options={{
+            // Prevent going back to protected routes when not authenticated
+            gestureEnabled: false,
+          }}
+        />
       ) : (
         // User sudah login
         <>
           <Stack.Screen name="Drawer" component={DrawerNavigator} />
           <Stack.Screen name="ProductDetail" component={ProductDetail} />
-          <Stack.Screen name="Checkout" component={Checkout} />
-          <Stack.Screen name="CartScreen" component={CartScreen} />
+          <Stack.Screen 
+            name="Checkout" 
+            component={Checkout}
+            options={{
+              // Custom options untuk checkout
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen 
+            name="CartScreen" 
+            component={CartScreen}
+            options={{
+              title: "Keranjang Saya",
+            }}
+          />
         </>
       )}
     </Stack.Navigator>

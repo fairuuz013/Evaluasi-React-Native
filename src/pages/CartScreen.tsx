@@ -3,9 +3,10 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from "react
 import NetInfo from "@react-native-community/netinfo";
 import { useCart } from "../context/CartContext";
 import apiClient from "../api/apiClient";
-import { storage } from "../utils/storage"; // IMPORT BARU
+import { storage } from "../utils/storage";
+import ProtectedRoute from "../components/ProtectedRoute"; // IMPORT BARU
 
-export default function CartScreen() {
+function CartScreenContent() {
   const { cart, getLocalTotal, updateQuantity, removeFromCart, clearCart } = useCart();
   const [total, setTotal] = useState<number>(getLocalTotal());
   const [connectionType, setConnectionType] = useState<string>("unknown");
@@ -35,7 +36,7 @@ export default function CartScreen() {
       try {
         console.log("🔄 Polling cart total from API...");
         const res = await apiClient.get("/carts/1");
-        
+
         if (res?.data?.total !== undefined) {
           setTotal(res.data.total);
         } else if (res?.data?.products) {
@@ -78,13 +79,13 @@ export default function CartScreen() {
         quantity: 1,
         largeField: "x".repeat(1000) // Large string
       });
-      
+
       await storage.saveCart(largeData);
       Alert.alert("Success", "Large data saved");
     } catch (error: any) {
       if (error?.message?.includes('QuotaExceededError')) {
         Alert.alert(
-          "Storage Full", 
+          "Storage Full",
           "Cart data cleared automatically. Please try again.",
           [{ text: "OK" }]
         );
@@ -114,7 +115,7 @@ export default function CartScreen() {
 
       {/* Connection Status */}
       <View style={[
-        styles.connectionStatus, 
+        styles.connectionStatus,
         { backgroundColor: isOnline ? '#4CAF50' : '#f44336' }
       ]}>
         <Text style={styles.connectionText}>
@@ -129,29 +130,29 @@ export default function CartScreen() {
           <View style={styles.item}>
             <View style={styles.itemHeader}>
               <Text style={styles.itemTitle}>{item.name}</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.removeBtn}
                 onPress={() => removeFromCart(item.id)}
               >
                 <Text style={styles.removeText}>×</Text>
               </TouchableOpacity>
             </View>
-            
+
             <Text style={styles.itemSub}>
               Rp {item.price.toLocaleString()}
             </Text>
-            
+
             <View style={styles.quantityContainer}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.quantityBtn}
                 onPress={() => updateQuantity(item.id, item.quantity - 1)}
               >
                 <Text>-</Text>
               </TouchableOpacity>
-              
+
               <Text style={styles.quantityText}>{item.quantity}</Text>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 style={styles.quantityBtn}
                 onPress={() => updateQuantity(item.id, item.quantity + 1)}
               >
@@ -169,9 +170,9 @@ export default function CartScreen() {
 
       <View style={styles.footer}>
         <Text style={styles.total}>Total: Rp {total.toLocaleString()}</Text>
-        
+
         <View style={styles.buttonRow}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.button, styles.syncButton]}
             onPress={syncCartToServer}
             disabled={!isOnline}
@@ -180,8 +181,8 @@ export default function CartScreen() {
               {isOnline ? '🔄 Sync' : '🔴 Offline'}
             </Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.button, styles.clearButton]}
             onPress={clearCart}
           >
@@ -189,7 +190,7 @@ export default function CartScreen() {
           </TouchableOpacity>
 
           {/* Hanya untuk testing - bisa dihapus di production */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.button, styles.testButton]}
             onPress={testQuotaExceeded}
           >
@@ -201,10 +202,19 @@ export default function CartScreen() {
   );
 }
 
+// EXPORT BARU: Wrap dengan ProtectedRoute
+export default function CartScreen() {
+  return (
+    <ProtectedRoute>
+      <CartScreenContent />
+    </ProtectedRoute>
+  );
+}
+
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
   title: { fontSize: 22, fontWeight: "bold", marginBottom: 12 },
-  
+
   connectionStatus: {
     padding: 8,
     borderRadius: 6,
@@ -216,12 +226,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 12,
   },
-  
-  item: { 
-    padding: 12, 
-    borderRadius: 8, 
-    borderWidth: 1, 
-    borderColor: "#eee", 
+
+  item: {
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#eee",
     marginBottom: 8,
     backgroundColor: '#fafafa',
   },
@@ -233,7 +243,7 @@ const styles = StyleSheet.create({
   },
   itemTitle: { fontSize: 16, fontWeight: "600", flex: 1 },
   itemSub: { marginBottom: 8, color: "#444", fontSize: 14 },
-  
+
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -253,7 +263,7 @@ const styles = StyleSheet.create({
     minWidth: 20,
     textAlign: 'center',
   },
-  
+
   removeBtn: {
     width: 24,
     height: 24,
@@ -267,7 +277,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  
+
   emptyContainer: {
     alignItems: 'center',
     padding: 40,
@@ -277,20 +287,20 @@ const styles = StyleSheet.create({
     color: '#666',
     fontStyle: 'italic',
   },
-  
-  footer: { 
-    marginTop: 16, 
-    padding: 16, 
-    backgroundColor: "#f7f7f7", 
+
+  footer: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: "#f7f7f7",
     borderRadius: 8,
   },
-  total: { 
-    fontSize: 18, 
+  total: {
+    fontSize: 18,
     fontWeight: "700",
     marginBottom: 12,
     textAlign: 'center',
   },
-  
+
   buttonRow: {
     flexDirection: 'row',
     gap: 8,

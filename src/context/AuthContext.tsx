@@ -6,7 +6,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (token: string) => void;
-  logout: (options?: { clearCart?: boolean }) => void; // UPDATE: tambah parameter options
+  logout: (options?: { clearCart?: boolean }) => void;
 }
 
 interface AuthProviderProps {
@@ -35,14 +35,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // MULTI-GET: Ambil semua data penting sekaligus
       const initialData = await storage.getAppInitialData();
       
-      setToken(initialData.token);
+      // BARU: Cek apakah token sudah expired
+      const isExpired = await storage.isTokenExpired();
       
-      // Data lain bisa disimpan di state/context lain nanti
+      if (initialData.token && !isExpired) {
+        // Token valid, set token
+        setToken(initialData.token);
+        console.log('✅ Token valid, user authenticated');
+      } else if (initialData.token && isExpired) {
+        // Token expired, auto logout
+        console.log('🚫 Token expired, auto logout');
+        await storage.cleanupOnLogout();
+        setToken(null);
+      } else {
+        // Tidak ada token
+        setToken(null);
+      }
+      
+      // Data lain tetap di-load
       console.log('Theme setting:', initialData.theme);
       console.log('Notification status:', initialData.notifications);
       
     } catch (error) {
       console.error('Error loading initial data:', error);
+      setToken(null); // Fallback: assume not logged in
     } finally {
       const endTime = Date.now();
       const loadTime = endTime - startTime;
@@ -52,25 +68,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const login = async (newToken: string) => {
-    await storage.setToken(newToken);
+    // BARU: Set token dengan expiry default 60 menit
+    await storage.setToken(newToken, 60); // 60 menit expiry
     setToken(newToken);
   };
 
-  // UPDATE: Logout dengan cleanup options
+  // Logout tetap sama...
   const logout = async (options?: { clearCart?: boolean }) => {
     try {
       console.log('🚪 Logging out with cleanup...');
-      
-      // Gunakan multiRemove untuk hapus data sensitif
       await storage.cleanupOnLogout(options);
-      
-      // Update state
       setToken(null);
-      
       console.log('✅ Logout successful');
     } catch (error) {
       console.error('❌ Error during logout:', error);
-      // Fallback: hapus token saja
       await storage.removeToken();
       setToken(null);
     }

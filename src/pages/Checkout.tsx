@@ -1,9 +1,10 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useCart } from "../context/CartContext"; // path relatif bisa beda
+import { useCart } from "../context/CartContext";
+import ProtectedRoute from "../components/ProtectedRoute"; // IMPORT BARU
 
-export default function Checkout() {
+function CheckoutContent() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { product } = route.params || {};
@@ -25,11 +26,9 @@ export default function Checkout() {
       imageUrl: product.imageUrl ?? product.thumbnail ?? "",
       quantity: 1,
     });
-    // navigate ke Cart screen — ganti "Cart" kalau router lo pake nama lain
     navigation.navigate("Drawer", {
-  screen: "CartScreen"
-});
-
+      screen: "CartScreen"
+    });
   };
 
   return (
@@ -51,6 +50,15 @@ export default function Checkout() {
         <Text style={styles.closeButtonText}>Tutup</Text>
       </TouchableOpacity>
     </View>
+  );
+}
+
+// EXPORT BARU: Wrap dengan ProtectedRoute
+export default function Checkout() {
+  return (
+    <ProtectedRoute>
+      <CheckoutContent />
+    </ProtectedRoute>
   );
 }
 

@@ -18,6 +18,8 @@ type CartContextType = {
   clearCart: () => void;
   getLocalTotal: () => number;
   getTotalItems: () => number;
+  // BARU: Function untuk external access (deep link)
+  addProductToCartById: (productId: number, quantity?: number) => Promise<void>;
   loading: boolean;
 };
 
@@ -81,6 +83,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // BARU: Function untuk add product by ID (untuk deep link)
+  const addProductToCartById = async (productId: number, quantity: number = 1): Promise<void> => {
+    try {
+      // Fetch product details dari API
+      const product = await productApi.getProduct(productId);
+      
+      // Add to cart
+      addToCart({
+        id: product.id,
+        name: product.title,
+        price: product.price,
+        imageUrl: product.thumbnail,
+        quantity: quantity,
+      });
+      
+      console.log(`🛒 Product ${productId} added to cart via deep link`);
+    } catch (error) {
+      console.error(`❌ Error adding product ${productId} to cart:`, error);
+      throw error;
+    }
+  };
+
   const removeFromCart = (itemId: number) => {
     setCart(prev => prev.filter(item => item.id !== itemId));
   };
@@ -92,10 +116,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      // OPTIMASI: Gunakan mergeItem untuk update quantity (lebih efisien)
       await storage.mergeCartItem(itemId, { quantity });
       
-      // Update local state
       setCart(prev =>
         prev.map(item =>
           item.id === itemId ? { ...item, quantity } : item
@@ -103,7 +125,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       );
     } catch (error) {
       console.error('Error updating quantity:', error);
-      // Fallback: update local state saja
       setCart(prev =>
         prev.map(item =>
           item.id === itemId ? { ...item, quantity } : item
@@ -132,6 +153,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       clearCart, 
       getLocalTotal,
       getTotalItems,
+      addProductToCartById, // BARU
       loading 
     }}>
       {children}
@@ -144,3 +166,6 @@ export const useCart = (): CartContextType => {
   if (!ctx) throw new Error("useCart must be used inside CartProvider");
   return ctx;
 };
+
+// BARU: Import productApi untuk digunakan dalam context
+import { productApi } from '../api/productApi';

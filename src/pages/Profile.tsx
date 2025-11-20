@@ -2,36 +2,38 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext'; // BARU
 import { storage } from '../utils/storage';
 
 export default function Profile() {
   const { token, logout } = useAuth();
   const { cart } = useCart();
+  const { wishlistCount } = useWishlist(); // BARU
 
   const handleLogout = () => {
     Alert.alert(
       'Logout',
-      `Pilih cara logout:\n\n• Logout biasa: tetap simpan keranjang\n• Logout + hapus keranjang: ${cart.length} item akan dihapus`,
+      `Pilih cara logout:\n\n• Logout biasa: tetap simpan keranjang & wishlist\n• Logout + hapus keranjang: ${cart.length} item akan dihapus`,
       [
         { text: 'Batal', style: 'cancel' },
         { 
           text: 'Logout Biasa', 
-          onPress: () => logout() // Tidak hapus cart
+          onPress: () => logout() // Tidak hapus cart & wishlist
         },
         { 
           text: `Logout + Hapus Keranjang (${cart.length})`, 
           style: 'destructive',
-          onPress: () => logout({ clearCart: true }) // Hapus cart juga
+          onPress: () => logout({ clearCart: true }) // Hapus cart saja, wishlist tetap
         },
       ]
     );
   };
 
   const handleDebug = async () => {
-    const keys = await storage.debugStorage();
+    const debugInfo = await storage.debugStorage();
     Alert.alert(
       'Debug Storage',
-      `Total keys: ${keys.length}\n\nKeys:\n${keys.join('\n')}`
+      `Total keys: ${debugInfo.keys.length}\n\nKeys:\n${debugInfo.keys.join('\n')}\n\n${debugInfo.keychainStatus}\n\nWishlist: ${debugInfo.wishlistCount} items`
     );
   };
 
@@ -45,6 +47,9 @@ export default function Profile() {
         </Text>
         <Text style={styles.cartInfo}>
           Keranjang: {cart.length} item
+        </Text>
+        <Text style={styles.wishlistInfo}> {/* BARU */}
+          Wishlist: {wishlistCount} item
         </Text>
       </View>
 
@@ -73,7 +78,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   status: { fontSize: 16, fontWeight: '600', marginBottom: 8 },
-  cartInfo: { fontSize: 14, color: '#666' },
+  cartInfo: { fontSize: 14, color: '#666', marginBottom: 4 },
+  wishlistInfo: { fontSize: 14, color: '#e91e63', fontWeight: '500' }, // BARU
   menu: { gap: 12 },
   logoutButton: {
     backgroundColor: '#ff4444',
