@@ -86,4 +86,41 @@ apiClient.interceptors.response.use(
   }
 );
 
+// 🔥 BARU: ANALYTICS API CLIENT
+export const analyticsClient = axios.create({
+  baseURL: "https://analytics.yourdomain.com", // Ganti dengan analytics server URL
+  timeout: 10000, // Shorter timeout untuk analytics
+});
+
+// 🔥 BARU: ANALYTICS REQUEST INTERCEPTOR
+analyticsClient.interceptors.request.use(
+  (config) => {
+    // Analytics-specific headers
+    config.headers["X-Analytics-Source"] = "react-native-app";
+    config.headers["X-Data-Optimized"] = "true";
+    
+    console.log("📊 Analytics request:", config.url);
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// 🔥 BARU: ANALYTICS RESPONSE INTERCEPTOR
+analyticsClient.interceptors.response.use(
+  (response: AxiosResponse) => {
+    console.log("✅ Analytics submitted successfully");
+    return response;
+  },
+  (error: AxiosError) => {
+    /**
+     * OPTIMASI: Analytics errors tidak perlu di-retry
+     * - Tidak critical untuk app functionality
+     * - Menghemat battery dan data
+     * - Akan di-capture di next session
+     */
+    console.log("⚠️ Analytics submission failed (non-critical)");
+    return Promise.resolve({ data: { success: false } }); // Return resolved promise untuk prevent error propagation
+  }
+);
+
 export default apiClient;
