@@ -1,138 +1,160 @@
-// components/ProductItem.tsx - VERSI SIMPLIFIED
 import React from 'react';
-import {
-    View,
-    Text,
-    Image,
-    StyleSheet,
-    useWindowDimensions,
-} from 'react-native';
-import { Product } from '../../types/Product';
-import { responsiveValue } from '../utils/responsive';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import Icon from "@react-native-vector-icons/fontawesome6";
 
 interface ProductItemProps {
-    product: Product;
+  product: {
+    id: number;
+    name: string;
+    price: number;
+    imageUrl?: string;
+    thumbnail?: string;
+    description?: string;
+  };
 }
 
-const ProductItem: React.FC<ProductItemProps> = ({ product }): React.JSX.Element => {
-    const { width } = useWindowDimensions();
+export default function ProductItem({ product }: ProductItemProps) {
+  const navigation = useNavigation<any>();
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
-    const formatPrice = (price: number): string => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-        }).format(price);
-    };
+  const handleAddToCart = () => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      imageUrl: product.imageUrl || product.thumbnail || '',
+      quantity: 1,
+    });
+    Alert.alert('Success', 'Produk ditambahkan ke keranjang!');
+  };
 
-    const getResponsiveStyles = () => {
-        const numColumns = responsiveValue({
-            xs: 1,
-            sm: 1,
-            md: 2,
-            lg: 3,
-            default: 1,
-        });
+  const handleToggleWishlist = async () => {
+    try {
+      const added = await toggleWishlist(product.id);
+      if (added) {
+        Alert.alert('Success', 'Ditambahkan ke wishlist! 💖');
+      } else {
+        Alert.alert('Success', 'Dihapus dari wishlist!');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Gagal mengupdate wishlist');
+    }
+  };
 
-        // Untuk multi-column layout, gunakan layout vertikal
-        const isMultiColumn = numColumns > 1;
+  const handleProductPress = () => {
+    navigation.navigate('ProductDetail', { product });
+  };
 
-        const imageSize = responsiveValue({
-            xs: 60,
-            sm: 70,
-            md: isMultiColumn ? 120 : 100,
-            lg: isMultiColumn ? 140 : 120,
-            default: 80,
-        });
+  const isWishlisted = isInWishlist(product.id);
 
-        return StyleSheet.create({
-            container: {
-                backgroundColor: 'white',
-                borderRadius: 8,
-                padding: responsiveValue({
-                    xs: 8,
-                    sm: 10,
-                    default: 12,
-                }),
-                marginBottom: responsiveValue({
-                    xs: 8,
-                    sm: 10,
-                    default: 12,
-                }),
-                flexDirection: 'column', // Selalu column untuk konsistensi
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.1,
-                shadowRadius: 2,
-                elevation: 2,
-                flex: isMultiColumn ? 1 : undefined,
-                margin: isMultiColumn ? 4 : 0,
-                width: isMultiColumn ? '100%' : undefined,
-            },
-            image: {
-                width: imageSize,
-                height: imageSize,
-                borderRadius: 8,
-                marginBottom: 8,
-                alignSelf: 'center',
-            },
-            info: {
-                flex: 1,
-                justifyContent: 'center',
-            },
-            name: {
-                fontSize: responsiveValue({
-                    xs: 14,
-                    sm: 15,
-                    default: 16,
-                }),
-                fontWeight: 'bold',
-                color: '#333',
-                marginBottom: 4,
-                textAlign: 'center',
-            },
-            price: {
-                fontSize: responsiveValue({
-                    xs: 12,
-                    sm: 13,
-                    default: 14,
-                }),
-                fontWeight: '600',
-                color: '#007AFF',
-                marginBottom: 4,
-                textAlign: 'center',
-            },
-            description: {
-                fontSize: responsiveValue({
-                    xs: 10,
-                    sm: 11,
-                    default: 12,
-                }),
-                color: '#666',
-                lineHeight: 16,
-                textAlign: 'center',
-            },
-        });
-    };
-
-    const styles = getResponsiveStyles();
-
-    return (
-        <View style={styles.container}>
-            <Image
-                source={{ uri: product.imageUrl }}
-                style={styles.image}
-                resizeMode="cover"
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity onPress={handleProductPress}>
+        <Image 
+          source={{ uri: product.imageUrl || product.thumbnail }} 
+          style={styles.image}
+          resizeMode="cover"
+        />
+      </TouchableOpacity>
+      
+      <View style={styles.infoContainer}>
+        <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
+        <Text style={styles.price}>Rp {product.price.toLocaleString()}</Text>
+        
+        <View style={styles.actions}>
+          <TouchableOpacity 
+            style={styles.cartButton}
+            onPress={handleAddToCart}
+          >
+            <Text style={styles.cartText}>+ Keranjang</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.wishlistButton,
+              isWishlisted && styles.wishlistButtonActive
+            ]}
+            onPress={handleToggleWishlist}
+          >
+            <Icon 
+              name={isWishlisted ? "heart" : "heart"} 
+              size={16} 
+              color={isWishlisted ? "#ff4444" : "#666"} 
+          
             />
-            <View style={styles.info}>
-                <Text style={styles.name}>{product.name}</Text>
-                <Text style={styles.price}>{formatPrice(product.price)}</Text>
-                <Text style={styles.description} numberOfLines={2}>
-                    {product.description}
-                </Text>
-            </View>
+          </TouchableOpacity>
         </View>
-    );
-};
+      </View>
+    </View>
+  );
+}
 
-export default ProductItem;
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    margin: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    overflow: 'hidden',
+  },
+  image: {
+    width: '100%',
+    height: 150,
+  },
+  infoContainer: {
+    padding: 12,
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    color: '#333',
+  },
+  price: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#007AFF',
+    marginBottom: 12,
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cartButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    flex: 1,
+    marginRight: 8,
+  },
+  cartText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  wishlistButton: {
+    width: 36,
+    height: 36,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  wishlistButtonActive: {
+    backgroundColor: '#fff5f5',
+    borderColor: '#ff4444',
+  },
+});
